@@ -105,7 +105,7 @@ main:
 	xor ah, ah
 	sub al, '0'						; Convert to digit.
 	dec al
-	cmp al, 9
+	cmp al, 7
 	jg .restart
 	mov bx, colors
 	xlat
