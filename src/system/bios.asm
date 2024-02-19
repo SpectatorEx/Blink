@@ -13,7 +13,7 @@ bios_cursor_type:
 	ret
 
 ; params (pos):
-;	[DX]: row, col.
+;	[DX]: y, x.
 ;	returns nothing.
 
 bios_cursor_pos:
@@ -33,7 +33,7 @@ bios_cursor_pos:
 ;	[DX]: y, x.
 ;	[BX]: page code, color code.
 ;
-;	Returns nothing.
+;	returns nothing.
 
 bios_set_color:
 	push ax
@@ -55,7 +55,7 @@ bios_set_color:
 bios_clear_screen:
 	push ax
 	
-	mov ax, 0x03
+	mov ax, 0x03	; 80x25 16 color text.
 	int 0x10
 
 	pop ax

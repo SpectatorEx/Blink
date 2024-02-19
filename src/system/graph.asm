@@ -3,7 +3,7 @@
 ;	[CX]: width.
 ;	[BX]: page code, color code.
 ;
-;	Returns nothing.
+;	returns nothing.
 
 draw_line:
 	push ax
@@ -23,7 +23,7 @@ draw_line:
 ;	[SI]: pointer to string.
 ;	[BX]: page code, color code.
 ;
-;	Returns nothing.
+;	returns nothing.
 
 draw_text:
 	push ax
@@ -58,7 +58,7 @@ draw_text:
 ;	[AX]: height, width.
 ;	[BX]: page code, color code.
 ;
-;	Returns nothing.
+;	returns nothing.
 
 draw_color_area:
 	push dx

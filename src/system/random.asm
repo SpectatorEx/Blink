@@ -13,17 +13,17 @@ xrandom:
 	mov ax, [rand_seed]
 	mov dx, ax
 
-	mov cl, 7	; 7 or 4.
+	mov cl, 7
 	shl ax, cl
 	xor dx, ax
 	mov ax, dx
 
-	mov cl, 9	; 9 or 3.
+	mov cl, 9
 	shr ax, cl
 	xor dx, ax
 	mov ax, dx
 
-	mov cl, 8 	; 8 or 7.
+	mov cl, 8
 	shl ax, cl
 	xor dx, ax
 	mov ax, dx

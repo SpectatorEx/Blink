@@ -1,5 +1,5 @@
 ; params (buffer, value):
-;	[DI]: pointer to string.
+;	[DI]: pointer to buffer.
 ;	[AX]: value (word) for convert to string.
 ;
 ;	returns filled buffer (string).

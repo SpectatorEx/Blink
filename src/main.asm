@@ -114,7 +114,7 @@ main:
 	jne .restart
 
 	inc word [score]				; Add points.
-	cmp word [score], 1000			; If max score == 1000.
+	cmp word [score], 1000			; If score == 1000.
 	je .restart
 
 	mov byte [time_count], 3		; Reset time counter.
@@ -127,8 +127,8 @@ main:
 	call display_score
 	call display_timer
 
-	call timer_async_stop			; Stop timer.
-	call timer_start				; Restart timer.
+	call timer_async_stop			; Stop system timer.
+	call timer_start				; Restart system timer.
 
 .draw:
 	mov bx, 1						; Random rectangle bgcolor.
