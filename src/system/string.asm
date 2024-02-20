@@ -21,8 +21,8 @@ string_conv_word:
 	push dx
 	inc cx
 
-	cmp ax, 0
-	jne .convert
+	test ax, ax
+	jnz .convert
 
 .write:
 	pop dx
