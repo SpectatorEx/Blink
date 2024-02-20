@@ -114,17 +114,18 @@ main:
 	jne .restart
 
 	inc word [score]				; Add points.
+	call display_score
+	
 	cmp word [score], 1000			; If score == 1000.
 	je .restart
 
 	mov byte [time_count], 3		; Reset time counter.
 	sub word [timer_tick], 750		; Increase timer speed.
-	jnc .redraw						; If CF != 1.
+	jnc .reset_timer				; If CF != 1.
 
 	dec word [timer_tick + 2]
 
-.redraw:
-	call display_score
+.reset_timer:
 	call display_timer
 
 	call timer_async_stop			; Stop system timer.
