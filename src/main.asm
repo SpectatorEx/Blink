@@ -53,13 +53,13 @@ main:
 	mov ah, 0x08					; Wait keyboard input.
 	int 0x21
 
+	cmp al, 0x1B					; If key == ESC.
+	je .exit
+
 	xor ax, ax						; Get system time.
 	int 0x1A
 
 	mov [rand_seed], dx
-
-	cmp al, 0x1B					; If key == ESC.
-	je .exit
 
 .start:
 	call bios_clear_screen
