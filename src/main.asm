@@ -1,13 +1,13 @@
 cpu 8086
 org 0x100
 
+%define HW_TICK			0x0F		; Total amount:
+%define LW_TICK			0x4240		; 1 sec.
+
 segment .data
 	score				dw 0
 	high_score 			dw 0
 	color_code			db 0
-
-	time_count			db 3
-	timer_tick			dd 0xF4240
 
 	high_score_msg		db "HI SCORE:",	'$'
 	score_msg			db "SCORE:",	'$'
@@ -73,9 +73,12 @@ main:
 	call draw_line
 
 	call display_score
-	call display_timer
-	
-	call timer_start				; Start system timer.
+
+	mov ax, 0x0428
+	mov bx, 3
+	mov cx, HW_TICK
+	mov dx, LW_TICK
+	call timer_init					; Init and start timer.
 
 	jmp .draw						; Draw rect and text.
 
@@ -85,16 +88,10 @@ main:
 	jnz .key_pressed
 
 .key_not_pressed:
-	cmp byte [time_count], 0		; If time counter == 0.
-	je .restart
-
-	cmp word [timer_flag], 0x80		; If timer isn't completed.
-	jne .update
-
-	dec byte [time_count]
-
-	call display_timer
-	call timer_start				; Restart system timer.
+	call timer_update
+	
+	cmp byte [tmr_count], 0			; If timer counter == 0
+	je .restart						; restart game.
 
 	jmp .update
 
@@ -115,21 +112,14 @@ main:
 
 	inc word [score]				; Add points.
 	call display_score
-	
+
 	cmp word [score], 1000			; If score == 1000.
 	je .restart
 
-	mov byte [time_count], 3		; Reset time counter.
-	sub word [timer_tick], 750		; Increase timer speed.
-	jnc .reset_timer				; If CF != 1.
-
-	dec word [timer_tick + 2]
-
-.reset_timer:
-	call display_timer
-
-	call timer_async_stop			; Stop system timer.
-	call timer_start				; Restart system timer.
+	mov dx, 750
+	mov byte [tmr_count], 3
+	call timer_draw
+	call timer_sub_interval
 
 .draw:
 	mov bx, 1						; Random rectangle bgcolor.
@@ -191,16 +181,10 @@ main:
 	mov [high_score], ax
 
 .reset:
-	mov byte [time_count], 3
-	mov word [timer_tick], 0x4240
-	mov word [timer_tick + 2], 0x0F
-
-	call timer_async_stop
-
 	mov dx, 0x1620
 	mov si, restart_msg
 	mov	bx,	0x07
-	call draw_text	 
+	call draw_text
 
 .wait_key:
 	mov ah, 0x08					; Wait keyboard input.
@@ -218,36 +202,6 @@ main:
 
 	mov ax, 0x4C00					; Terminate program.
 	int 0x21
-
-timer_start:
-	push dx
-	push cx
-
-	mov cx, [timer_tick + 2]
-	mov dx, [timer_tick]
-	call timer_async
-
-	pop cx
-	pop dx
-
-	ret
-
-display_timer:
-	push ax
-	push dx
-
-	mov dx, 0x0428
-	call bios_cursor_pos
-
-	mov ah, 0x02
-	mov dl,	[time_count]
-	add dl, '0'
-	int 0x21
-
-	pop dx
-	pop ax
-
-	ret
 
 display_score:
 	push ax
