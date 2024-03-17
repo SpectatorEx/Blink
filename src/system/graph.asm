@@ -1,15 +1,56 @@
-; params (pos, width, color):
+; params (pos):
 ;	[DX]: y, x.
-;	[CX]: width.
+;	returns nothing.
+
+cursor_pos:
+	push ax
+	push bx
+
+	mov ah, 0x02
+	xor bx, bx
+	int 0x10
+
+	pop bx
+	pop ax
+
+	ret
+
+; params (pos, color):
+;	[DX]: y, x.
+;	[BX]: page code, color code.
+;
+;	returns nothing.
+
+set_color:
+	push ax
+	push cx
+
+	call cursor_pos
+
+	mov ah, 0x08
+	int 0x10
+
+	mov ah, 0x09
+	mov cx, 1
+	int 0x10
+
+	pop cx
+	pop ax
+
+	ret
+
+; params (pos, length, color):
+;	[DX]: y, x.
+;	[CX]: length.
 ;	[BX]: page code, color code.
 ;
 ;	returns nothing.
 
 draw_line:
 	push ax
-	call bios_cursor_pos
 
-.draw:
+	call cursor_pos
+
 	mov ah, 0x09
 	mov al, '#'
 	int 0x10
@@ -34,7 +75,7 @@ draw_text:
 	mov cx, 1
 
 .draw:
-	call bios_cursor_pos
+	call cursor_pos
 
 	mov ah, 0x09
 	mov al, [si]
@@ -53,6 +94,27 @@ draw_text:
 
 	ret
 
+; params (pos, length)
+;	[DX]: y, x.
+;	[CX]: string length.
+;
+;	returns nothing.
+
+clear_text:
+	push ax
+	push bx
+
+	call cursor_pos
+	
+	mov ax, 0x0920
+	xor bx, bx
+	int 0x10
+
+	pop bx
+	pop ax
+
+	ret
+
 ; params (pos, size, color):
 ;	[DX]: y, x.
 ;	[AX]: height, width.
@@ -67,7 +129,7 @@ draw_color_area:
 	mov cx, dx
 
 .draw:
-	call bios_set_color
+	call set_color
 
 	inc dl
 	cmp dl, al
@@ -80,5 +142,31 @@ draw_color_area:
 
 	pop cx
 	pop dx
+
+	ret
+
+clear_screen:
+	push ax
+
+	mov ax, 0x03		; 80x25 16 color text.
+	int 0x10			; Reset text mode.
+
+	pop ax
+
+	ret
+
+clear_screen_ex:
+	push ax
+	push cx
+
+	mov ax, 0x03		; 80x25 16 color text.
+	int 0x10			; Reset text mode.
+
+	mov ah, 0x01		; Disable cursor.
+	mov cx, 0x2000
+	int 0x10
+
+	pop cx
+	pop ax
 
 	ret

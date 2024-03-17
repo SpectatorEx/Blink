@@ -29,7 +29,7 @@ timer_draw:
 	push dx
 	
 	mov dx, [tmr_pos]
-	call bios_cursor_pos
+	call cursor_pos
 
 	mov ah, 0x02				; Display timer counter
 	mov dl, [tmr_count]			; (0-9 seconds only).
@@ -63,7 +63,7 @@ timer_interval:
 	mov ax, 0x8301				; Reset interval.
 	int 0x15
 
-	xor al, al					; Set interval.
+	mov ax, 0x8300				; Set interval.
 	mov cx, [tmr_intv + 2]
 	mov dx, [tmr_intv]
 	mov bx, intv_flag			; If the flag is set to 0x80,
