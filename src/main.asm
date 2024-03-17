@@ -1,8 +1,8 @@
 cpu 8086
 org 0x100
 
-%define HW_TICK			0x0F		; Total amount:
-%define LW_TICK			0x4240		; 1 sec.
+%define HW_INTV			0x0F		; Total amount:
+%define LW_INTV			0x4240		; 1 sec.
 
 segment .data
 	score				dw 0
@@ -31,10 +31,7 @@ segment .bss
 segment .text
 
 main:
-	call bios_clear_screen
-
-	mov cx, 0x2000					; Disable cursor.
-	call bios_cursor_type
+	call clear_screen_ex			; Clear screen and cursor.
 
 	mov ah, 0x09					; Print	intro.
 	mov dx, info_msg
@@ -56,17 +53,14 @@ main:
 	cmp al, 0x1B					; If key == ESC.
 	je .exit
 
+	call clear_screen_ex
+
 	xor ax, ax						; Get system time.
 	int 0x1A
 
 	mov [rand_seed], dx				; Set random seed.
 
 .start:
-	call bios_clear_screen
-
-	mov cx, 0x2000
-	call bios_cursor_type
-
 	xor dx, dx
 	mov cx, 0x50
 	mov bx, 0x33
@@ -76,8 +70,8 @@ main:
 
 	mov ax, 0x0428
 	mov bx, 3
-	mov cx, HW_TICK
-	mov dx, LW_TICK
+	mov cx, HW_INTV
+	mov dx, LW_INTV
 	call timer_init					; Init and start timer.
 
 	jmp .draw						; Draw rect and text.
@@ -143,13 +137,18 @@ main:
 	div bx
 
 	mov ax, dx						; Set index to search in array.
-	mov bx, names_offset			; Set pointer to array.
-	xlat							; Get value from array index to AL register.
+	mov bx, colors					; Set pointer to array.
+	xlat							; Get value from array to AL register.
+	mov [color_code], al			; Save color code.
+
+	mov ax, dx
+	mov bx, names_offset
+	xlat
 	mov bx, ax						; Copy this value.
 	mov di, color_names				; Set pointer to first string.
 	lea si, [bx + di]				; Get final string.
 
-	mov bx, 8						; Get random array index.
+	mov bx, 8
 	xor dx, dx
 	call xrandom
 	div bx
@@ -157,7 +156,6 @@ main:
 	mov ax, dx
 	mov bx, colors
 	xlat
-	mov [color_code], al			; Save color code.
 	xor bx, bx
 	mov bl, cl						; Get saved rect bgcolor.
 	add bl, al						; Set text fgcolor with rect bgcolor.
@@ -183,7 +181,7 @@ main:
 .continue:
 	mov dx, 0x1620
 	mov si, restart_msg
-	mov	bx,	0x07
+	mov	bx, 0x07
 	call draw_text
 
 .wait_key:
@@ -191,14 +189,19 @@ main:
 	int 0x21
 
 	cmp al, 'r'
-	je .start
-	cmp al, 0x1B
-	je .exit
+	jne .next_key
 
-	jmp .wait_key
+	mov cx, 16
+	call clear_text
+
+	jmp .start
+
+.next_key:
+	cmp al, 0x1B					; If key == ESC.
+	jne .wait_key
 
 .exit:
-	call bios_clear_screen
+	call clear_screen
 
 	mov ax, 0x4C00					; Terminate program.
 	int 0x21
@@ -244,7 +247,6 @@ display_score:
 	ret
 
 %include "info.asm"
-%include "system/bios.asm"
 %include "system/graph.asm"
 %include "system/timer.asm"
 %include "system/random.asm"
