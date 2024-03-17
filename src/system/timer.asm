@@ -6,7 +6,7 @@ segment .data
 
 segment .text
 
-; params (pos, sec, delay):
+; params (pos, sec, interval):
 ;	[AX]: y, x.
 ;	[BX]: seconds amount.
 ;	[CX, DX]: microseconds (1000000 us = 1 sec.)
@@ -31,7 +31,7 @@ timer_draw:
 	mov dx, [tmr_pos]
 	call bios_cursor_pos
 
-	mov ah, 0x02				; display timer
+	mov ah, 0x02				; Display timer counter
 	mov dl, [tmr_count]			; (0-9 seconds only).
 	add dl, '0'
 	int 0x21

@@ -59,7 +59,7 @@ main:
 	xor ax, ax						; Get system time.
 	int 0x1A
 
-	mov [rand_seed], dx
+	mov [rand_seed], dx				; Set random seed.
 
 .start:
 	call bios_clear_screen
@@ -101,16 +101,16 @@ main:
 
 	xor ah, ah
 	sub al, '0'						; Convert to digit.
-	dec al
-	cmp al, 7
+	cmp al, 8
 	jg .restart
+
+	dec al							; Get color code from array.
 	mov bx, colors
 	xlat
-
 	cmp al, [color_code]
 	jne .restart
 
-	inc word [score]				; Add points.
+	inc word [score]				; Add point.
 	call display_score
 
 	cmp word [score], 1000			; If score == 1000.
@@ -122,14 +122,14 @@ main:
 	call timer_sub_interval
 
 .draw:
-	mov bx, 1						; Random rectangle bgcolor.
+	mov bx, 1						; Random rect bgcolor.
 	mov cx, 7
 	call xrandom_range
 
-	mov bx, ax
-	mov cl, 4
-	rol bl, cl						; Rotate half a byte.
-	mov cl, bl						; Save rectangle bgcolor.
+	mov bx, ax						; Copy random color.
+	mov cl, 4						; Set the shift value.
+	rol bl, cl						; Set rect bgcolor.
+	mov cl, bl						; Save rect bgcolor.
 	add bl, al
 
 	mov dx, 0x061E					; Draw rect 20x14.
@@ -137,7 +137,7 @@ main:
 	call draw_color_area
 
 .draw_string:
-	mov bx, 8						; Get random string [0..7].
+	mov bx, 8						; Get random index [0..7].
 	xor dx, dx
 	call xrandom
 	div bx
@@ -145,8 +145,8 @@ main:
 	mov ax, dx						; Set index to search in array.
 	mov bx, names_offset			; Set pointer to array.
 	xlat							; Get value from array index to AL register.
-	mov bx, ax
-	mov di, color_names
+	mov bx, ax						; Copy this value.
+	mov di, color_names				; Set pointer to first string.
 	lea si, [bx + di]				; Get final string.
 
 	mov bx, 8						; Get random array index.
@@ -159,8 +159,8 @@ main:
 	xlat
 	mov [color_code], al			; Save color code.
 	xor bx, bx
-	mov bl, cl						; Get rectangle bgcolor.
-	add bl, al						; Set color with rectangle bgcolor.
+	mov bl, cl						; Get saved rect bgcolor.
+	add bl, al						; Set text fgcolor with rect bgcolor.
 
 	call string_length
 
@@ -176,11 +176,11 @@ main:
 	mov word [score], 0
 
 	cmp ax, [high_score]			; If score < high score.
-	jl .reset
+	jl .continue
 
 	mov [high_score], ax
 
-.reset:
+.continue:
 	mov dx, 0x1620
 	mov si, restart_msg
 	mov	bx,	0x07

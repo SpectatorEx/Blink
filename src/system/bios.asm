@@ -39,12 +39,13 @@ bios_set_color:
 	push ax
 	push cx
 
-	mov cx, 1
 	call bios_cursor_pos
 
 	mov ah, 0x08
 	int 0x10
+
 	mov ah, 0x09
+	mov cx, 1
 	int 0x10
 
 	pop cx
